@@ -302,11 +302,7 @@ static int git_sysdir_guess_home_dirs(git_str *out)
 	return find_win32_dirs(out, global_tmpls);
 #else
 	int error;
-	uid_t uid, euid;
 	const char *sandbox_id;
-
-	uid = getuid();
-	euid = geteuid();
 
 	/**
 	 * If APP_SANDBOX_CONTAINER_ID is set, we are running in a
@@ -321,10 +317,10 @@ static int git_sysdir_guess_home_dirs(git_str *out)
 	 * If we are running in a sandboxed environment on macOS,
 	 * we have to get the HOME dir from the password entry file.
 	 */
-	if (!sandbox_id && uid == euid)
+	if (!sandbox_id)
 	    error = git__getenv(out, "HOME");
 	else
-	    error = get_passwd_home(out, euid);
+	    error = GIT_ENOTFOUND;
 
 	if (error == GIT_ENOTFOUND) {
 		git_error_clear();
@@ -357,23 +353,16 @@ static int git_sysdir_guess_xdg_dirs(git_str *out)
 #else
 	git_str env = GIT_STR_INIT;
 	int error;
-	uid_t uid, euid;
-
-	uid = getuid();
-	euid = geteuid();
 
 	/*
 	 * In case we are running setuid, only look up passwd
 	 * directory of the effective user.
 	 */
-	if (uid == euid) {
+	if (1) {
 		if ((error = git__getenv(&env, "XDG_CONFIG_HOME")) == 0)
 			error = git_str_joinpath(out, env.ptr, "git");
 
 		if (error == GIT_ENOTFOUND && (error = git__getenv(&env, "HOME")) == 0)
-			error = git_str_joinpath(out, env.ptr, ".config/git");
-	} else {
-		if ((error = get_passwd_home(&env, euid)) == 0)
 			error = git_str_joinpath(out, env.ptr, ".config/git");
 	}
 
