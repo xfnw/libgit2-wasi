@@ -23,8 +23,6 @@ if(WIN32 AND NOT CYGWIN)
 	file(GLOB UTIL_SRC_OS win32/*.c win32/*.h)
 	list(SORT UTIL_SRC_OS)
 elseif(NOT AMIGA)
-	file(GLOB UTIL_SRC_OS unix/*.c unix/*.h)
-	list(SORT UTIL_SRC_OS)
 endif()
 
 #
